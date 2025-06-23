@@ -4,15 +4,20 @@
 package main
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"math/rand"
+	"net"
+	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
 	"github.com/armon/go-metrics"
 	"github.com/go-ping/ping"
 	"github.com/hashicorp/consul/api"
+	"github.com/hashicorp/go-hclog"
 	multierror "github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/serf/coordinate"
 	"github.com/mitchellh/mapstructure"
@@ -91,6 +96,27 @@ func (a *Agent) updateCoords(nodeCh nodeChannel) {
 	}
 }
 
+// isUrl checks if the given string is a valid URL and returns true if it is.
+func (a *Agent) isUrl(str string) (bool, error) {
+	url, err := url.ParseRequestURI(str)
+	if err != nil {
+		// log.Info(err.Error())
+		a.logger.Error("url parse is failed", "url", str, "error", err)
+		return false, err
+	}
+
+	address := net.ParseIP(url.Host)
+	// log.Infow("url-info", "host", address)
+
+	if address == nil {
+		// log.Infow("url-info", "host", url.Host)
+
+		return strings.Contains(url.Host, "."), err
+	}
+
+	return true, nil
+}
+
 // runNodePing pings a node and updates its status in Consul accordingly.
 func (a *Agent) runNodePing(node *api.Node) {
 	// Get the critical status of the node.
@@ -101,8 +127,18 @@ func (a *Agent) runNodePing(node *api.Node) {
 		a.logger.Error("could not get critical status for node", "node", node.Node, "error", err)
 	}
 
-	// Run an ICMP ping to the node.
-	rtt, err := pingNode(node.Address, a.config.PingType)
+	var rtt time.Duration = 0
+	isurl, err := a.isUrl(node.Address)
+
+	if isurl {
+
+		a.logger.Info("node url is checked as HTTP ping", "node", node.Node, "address", node.Address)
+		rtt, err = pingNodeHttp(node.Address, a.logger)
+	} else {
+		a.logger.Info("node url is checked as TCP/ICMP ping", "node", node.Node, "address", node.Address, "pingType", a.config.PingType)
+		// Run an ICMP ping to the node.
+		rtt, err = pingNode(node.Address, a.config.PingType)
+	}
 
 	// Update the node's health based on the results of the ping.
 	if err == nil {
@@ -400,6 +436,27 @@ func (a *Agent) updateNodeCoordinate(node *api.Node, rtt time.Duration) error {
 	}
 	a.logger.Info("Updated coordinates", "node", node.Node, "distanceFromPreviousCoord", coord.Coord.DistanceTo(newCoord))
 	return nil
+}
+
+// pingNodeHttp is a placeholder function for performing HTTP pings.
+func pingNodeHttp(addr string, logger hclog.Logger) (time.Duration, error) {
+	// This function is not implemented in this context.
+	// It should be implemented to perform HTTP pings if needed.
+
+	logger.Info("Updated coordinates - pingNoneHttp", "address", addr)
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := &http.Client{Transport: tr}
+	_, err := client.Get(addr)
+	if err != nil {
+		fmt.Println(err)
+		return 0, err
+	}
+
+	// If the ping was successful, return a dummy duration.
+	return 100 * time.Millisecond, nil
 }
 
 // pingNode runs an ICMP or UDP ping against an address.
