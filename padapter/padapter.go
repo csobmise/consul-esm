@@ -17,11 +17,7 @@ const (
 	MaxRTT       = time.Second * 5 // nebo zkopíruj z původního balíčku
 )
 
-// Statistics – jen vybrané pole z orig. Statistics
-type Statistics struct {
-	PacketsRecv int
-	MaxRtt      time.Duration
-}
+type Statistics = orig.Statistics // použijeme původní Statistics, ale můžeme si ji i zjednodušit
 
 // Pinger obaluje buď orig.Pinger, nebo HTTP „ping“
 type Pinger struct {

@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/armon/go-metrics"
-	orig "github.com/go-ping/ping"
 
 	ping "github.com/hashicorp/consul-esm/padapter"
 
@@ -431,7 +430,7 @@ func pingNode(addr string, method string) (time.Duration, error) {
 
 	p.Count = 1
 	p.Timeout = MaxRTT
-	p.OnFinish = func(stats *orig.Statistics) {
+	p.OnFinish = func(stats *ping.Statistics) {
 		if stats.PacketsRecv >= p.Count {
 			rtt = stats.MaxRtt
 		} else {
