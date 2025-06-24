@@ -23,6 +23,7 @@ import (
 
 const (
 	PingTypeUDP    = "udp"
+	PingTypeHTTP   = "http"
 	PingTypeSocket = "socket"
 )
 

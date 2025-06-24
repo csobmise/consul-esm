@@ -11,7 +11,10 @@ import (
 	"time"
 
 	"github.com/armon/go-metrics"
-	"github.com/go-ping/ping"
+	// "github.com/go-ping/ping"
+
+	ping "github.com/hashicorp/consul-esm/padapter"
+
 	"github.com/hashicorp/consul/api"
 	multierror "github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/serf/coordinate"
@@ -415,6 +418,11 @@ func pingNode(addr string, method string) (time.Duration, error) {
 	}
 
 	switch method {
+	case PingTypeHTTP:
+		if !p.HasHttpUrl() {
+			return 0, fmt.Errorf("ping type %q requires a URL to be set", method)
+		}
+
 	case PingTypeUDP: // p's default
 	case PingTypeSocket:
 		p.SetPrivileged(true)
