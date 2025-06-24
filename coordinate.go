@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/armon/go-metrics"
-	// "github.com/go-ping/ping"
+	orig "github.com/go-ping/ping"
 
 	ping "github.com/hashicorp/consul-esm/padapter"
 
@@ -422,7 +422,6 @@ func pingNode(addr string, method string) (time.Duration, error) {
 		if !p.HasHttpUrl() {
 			return 0, fmt.Errorf("ping type %q requires a URL to be set", method)
 		}
-
 	case PingTypeUDP: // p's default
 	case PingTypeSocket:
 		p.SetPrivileged(true)
@@ -432,7 +431,7 @@ func pingNode(addr string, method string) (time.Duration, error) {
 
 	p.Count = 1
 	p.Timeout = MaxRTT
-	p.OnFinish = func(stats *ping.Statistics) {
+	p.OnFinish = func(stats *orig.Statistics) {
 		if stats.PacketsRecv >= p.Count {
 			rtt = stats.MaxRtt
 		} else {

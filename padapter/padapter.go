@@ -5,7 +5,6 @@ package padapter
 import (
 	"crypto/tls"
 	"fmt"
-	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -32,7 +31,7 @@ type Pinger struct {
 	// necháme stejná pole, co orig.Pinger exportuje
 	Count    int
 	Timeout  time.Duration
-	OnFinish func(*Statistics)
+	OnFinish func(*orig.Statistics)
 }
 
 // NewPinger přebírá stejný signaturu jako orig.NewPinger, ale přidáme volbou metody
@@ -72,11 +71,10 @@ func (p *Pinger) Run() {
 
 	if p.httpURL != "" {
 		start := time.Now()
-		resp, err := http.Get(p.httpURL)
-		stats := &Statistics{}
+		_, err := p.runHttp()
+		stats := &orig.Statistics{}
 		if err == nil {
-			io.Copy(io.Discard, resp.Body)
-			resp.Body.Close()
+
 			if p.Count > 0 {
 				stats.PacketsRecv = 1
 				stats.MaxRtt = time.Since(start)
@@ -90,18 +88,11 @@ func (p *Pinger) Run() {
 	// ICMP/UDP cesta – jen přepošleme data do orig.Pinger
 	p.orig.Count = p.Count
 	p.orig.Timeout = p.Timeout
-	p.orig.OnFinish = func(os *orig.Statistics) {
-		if p.OnFinish != nil {
-			p.OnFinish(&Statistics{
-				PacketsRecv: os.PacketsRecv,
-				MaxRtt:      os.MaxRtt,
-			})
-		}
-	}
+	p.orig.OnFinish = p.OnFinish
 	p.orig.Run()
 }
 
-func (p *Pinger) runHttp() {
+func (p *Pinger) runHttp() (time.Duration, error) {
 
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
@@ -113,7 +104,7 @@ func (p *Pinger) runHttp() {
 		//return 0, err
 	}
 
-	return
+	return 0, nil // vrátíme 0, protože jsme neimplementovali měření času
 	// If the ping was successful, return a dummy duration.
 	// return 100 * time.Millisecond, nil
 }
