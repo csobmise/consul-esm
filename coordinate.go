@@ -129,7 +129,7 @@ func (a *Agent) runNodePing(node *api.Node) {
 
 	// Is enabled set strict HTTP pings or the node address in valid HTTP URL
 	if a.config.PingType == PingTypeHttp || (isHttpUrl && err != nil) {
-		a.logger.Info("node url is checked as HTTP ping", "node", node.Node, "address", node.Address)
+		a.logger.Info("node url is checked as HTTP ping", "node", node.Node, "address", node.Address, "pingType", a.config.PingType)
 		rtt, err = pingNodeHttp(node.Address, a.config.PingType)
 	} else {
 		a.logger.Info("node url is checked as TCP/ICMP ping", "node", node.Node, "address", node.Address, "pingType", a.config.PingType)
