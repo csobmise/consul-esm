@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
-	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -17,7 +16,6 @@ import (
 	"github.com/armon/go-metrics"
 	"github.com/go-ping/ping"
 	"github.com/hashicorp/consul/api"
-	"github.com/hashicorp/go-hclog"
 	multierror "github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/serf/coordinate"
 	"github.com/mitchellh/mapstructure"
@@ -96,22 +94,21 @@ func (a *Agent) updateCoords(nodeCh nodeChannel) {
 	}
 }
 
-// isUrl checks if the given string is a valid URL and returns true if it is.
-func (a *Agent) isUrl(str string) (bool, error) {
+// isHttpUrl checks if the given string is a valid URL and returns true if it is.
+func (a *Agent) isHttpUrl(str string) (bool, error) {
 	url, err := url.ParseRequestURI(str)
+
 	if err != nil {
-		// log.Info(err.Error())
 		a.logger.Error("url parse is failed", "url", str, "error", err)
 		return false, err
 	}
 
-	address := net.ParseIP(url.Host)
-	// log.Infow("url-info", "host", address)
+	if url.Scheme != "http" || url.Scheme != "https" {
+		return false, fmt.Errorf("supported schemes are (%s)", url.Scheme)
+	}
 
-	if address == nil {
-		// log.Infow("url-info", "host", url.Host)
-
-		return strings.Contains(url.Host, "."), err
+	if url.Host == "" {
+		return false, fmt.Errorf("host is empty in url %s", str)
 	}
 
 	return true, nil
@@ -128,15 +125,16 @@ func (a *Agent) runNodePing(node *api.Node) {
 	}
 
 	var rtt time.Duration = 0
-	isurl, err := a.isUrl(node.Address)
+	isHttpUrl, err := a.isHttpUrl(node.Address)
 
-	if isurl {
-
+	// Is enabled set strict HTTP pings or the node address in valid HTTP URL
+	if a.config.PingType == PingTypeHttp || (isHttpUrl && err != nil) {
 		a.logger.Info("node url is checked as HTTP ping", "node", node.Node, "address", node.Address)
-		rtt, err = pingNodeHttp(node.Address, a.logger)
+		rtt, err = pingNodeHttp(node.Address, a.config.PingType)
 	} else {
 		a.logger.Info("node url is checked as TCP/ICMP ping", "node", node.Node, "address", node.Address, "pingType", a.config.PingType)
-		// Run an ICMP ping to the node.
+		// Run node ping using ICMP or UDP based on the configured ping type.
+		// Note: Node address for ICMP/UDP pings should be an IP address or hostname
 		rtt, err = pingNode(node.Address, a.config.PingType)
 	}
 
@@ -439,24 +437,30 @@ func (a *Agent) updateNodeCoordinate(node *api.Node, rtt time.Duration) error {
 }
 
 // pingNodeHttp is a placeholder function for performing HTTP pings.
-func pingNodeHttp(addr string, logger hclog.Logger) (time.Duration, error) {
+func pingNodeHttp(addr string, method string) (time.Duration, error) {
 	// This function is not implemented in this context.
 	// It should be implemented to perform HTTP pings if needed.
-
-	logger.Info("Updated coordinates - pingNoneHttp", "address", addr)
 
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 	client := &http.Client{Transport: tr}
-	_, err := client.Get(addr)
+	start := time.Now()
+	res, err := client.Get(addr)
 	if err != nil {
-		fmt.Println(err)
 		return 0, err
+	}
+	// Get request duration
+	duration := time.Since(start)
+
+	// Check if the response status code is OK (200).
+	if res.StatusCode != 200 {
+		return 0, fmt.Errorf("HTTP ping to %q failed with status code %d", addr, res.StatusCode)
 	}
 
 	// If the ping was successful, return a dummy duration.
-	return 100 * time.Millisecond, nil
+	//return 100 * time.Millisecond, nil
+	return duration, nil
 }
 
 // pingNode runs an ICMP or UDP ping against an address.

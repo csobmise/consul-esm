@@ -6,14 +6,13 @@ cd ./consul-esm
 go mod tidy
 
 
+# make -C build
+# make -C test
 
-make -C build
-make -C test
-
-go env
+# go env
 
 
-export CONSUL_ESM_VERSION="0.2.0"
+export CONSUL_ESM_VERSION="0.3.1"
 
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "-s -w -X github.com/hashicorp/consul-esm/version.Name="consul-esm" -X github.com/hashicorp/consul-esm/version.Version="$CONSUL_ESM_VERSION"" -o "dist/linux/amd64/consul-esm-linux-$CONSUL_ESM_VERSION"
 

@@ -24,6 +24,7 @@ import (
 const (
 	PingTypeUDP    = "udp"
 	PingTypeSocket = "socket"
+	PingTypeHttp   = "http"
 )
 
 type Config struct {
