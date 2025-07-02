@@ -12,7 +12,7 @@ import (
 
 	"github.com/armon/go-metrics"
 
-	ping "github.com/hashicorp/consul-esm/padapter"
+	ping "github.com/hashicorp/consul-esm/pingwrap"
 
 	"github.com/hashicorp/consul/api"
 	multierror "github.com/hashicorp/go-multierror"

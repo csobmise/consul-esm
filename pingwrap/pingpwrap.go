@@ -1,4 +1,4 @@
-package padapter
+package pingwrap
 
 // myping/ping.go
 
