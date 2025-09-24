@@ -23,7 +23,7 @@ import (
 
 const (
 	PingTypeUDP    = "udp"
-	PingTypeHTTP   = "http"
+	PingTypeHTTPS  = "https"
 	PingTypeSocket = "socket"
 )
 
@@ -341,10 +341,10 @@ func BuildConfig(configFiles []string) (*Config, error) {
 // ValidateConfig verifies that the given Config object is valid.
 func ValidateConfig(conf *Config) error {
 	switch conf.PingType {
-	case PingTypeUDP, PingTypeSocket:
+	case PingTypeUDP, PingTypeSocket, PingTypeHTTPS:
 		break
 	default:
-		return fmt.Errorf("ping_type must be one of either \"udp\" or \"socket\"")
+		return fmt.Errorf("ping_type must be one of either \"udp\", \"socket\", or \"http\"")
 	}
 
 	if conf.CoordinateUpdateInterval < time.Second {

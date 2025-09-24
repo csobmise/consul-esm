@@ -13,16 +13,16 @@ import (
 )
 
 const (
-	PingTypeHTTP = "http"
-	MaxRTT       = time.Second * 5 // nebo zkopíruj z původního balíčku
+	PingTypeHTTPS = "https"
+	MaxRTT        = time.Second * 5 // nebo zkopíruj z původního balíčku
 )
 
 type Statistics = orig.Statistics // použijeme původní Statistics, ale můžeme si ji i zjednodušit
 
 // Pinger obaluje buď orig.Pinger, nebo HTTP „ping“
 type Pinger struct {
-	orig    *orig.Pinger
-	httpURL string
+	orig     *orig.Pinger
+	httpsURL string
 
 	// necháme stejná pole, co orig.Pinger exportuje
 	Count    int
@@ -33,11 +33,11 @@ type Pinger struct {
 // NewPinger přebírá stejný signaturu jako orig.NewPinger, ale přidáme volbou metody
 func NewPinger(addr string) (*Pinger, error) {
 	// adresa url se pozná podle schématu http:// nebo https://
-	if strings.HasPrefix(addr, "http://") || strings.HasPrefix(addr, "https://") {
+	if strings.HasPrefix(addr, "https://") {
 		return &Pinger{
-			httpURL: addr,
-			Count:   1,
-			Timeout: MaxRTT,
+			httpsURL: addr,
+			Count:    1,
+			Timeout:  MaxRTT,
 		}, nil
 	}
 	// jinak zavoláme originál
@@ -59,13 +59,13 @@ func (p *Pinger) SetPrivileged(v bool) {
 }
 
 func (p *Pinger) HasHttpUrl() bool {
-	return p.httpURL != ""
+	return p.httpsURL != ""
 }
 
 // Run se postará o obě varianty
 func (p *Pinger) Run() {
 
-	if p.httpURL != "" {
+	if p.httpsURL != "" {
 		start := time.Now()
 		_, err := p.runHttp()
 		stats := &orig.Statistics{}
@@ -94,7 +94,7 @@ func (p *Pinger) runHttp() (time.Duration, error) {
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 	client := &http.Client{Transport: tr}
-	_, err := client.Get(p.httpURL)
+	_, err := client.Get(p.httpsURL)
 	if err != nil {
 		fmt.Println(err)
 		//return 0, err
