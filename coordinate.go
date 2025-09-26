@@ -418,7 +418,7 @@ func pingNode(addr string, method string) (time.Duration, error) {
 
 	switch method {
 	case PingTypeHTTPS:
-		if !p.HasHttpUrl() {
+		if !p.HasHttpsUrl() {
 			return 0, fmt.Errorf("ping type %q requires a URL to be set", method)
 		}
 	case PingTypeUDP: // p's default

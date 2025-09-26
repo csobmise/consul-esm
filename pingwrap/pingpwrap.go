@@ -58,7 +58,7 @@ func (p *Pinger) SetPrivileged(v bool) {
 	}
 }
 
-func (p *Pinger) HasHttpUrl() bool {
+func (p *Pinger) HasHttpsUrl() bool {
 	return p.httpsURL != ""
 }
 
@@ -67,7 +67,7 @@ func (p *Pinger) Run() {
 
 	if p.httpsURL != "" {
 		start := time.Now()
-		_, err := p.runHttp()
+		_, err := p.runHttps()
 		stats := &orig.Statistics{}
 		if err == nil {
 
@@ -88,7 +88,7 @@ func (p *Pinger) Run() {
 	p.orig.Run()
 }
 
-func (p *Pinger) runHttp() (time.Duration, error) {
+func (p *Pinger) runHttps() (time.Duration, error) {
 
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
