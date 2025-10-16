@@ -1,6 +1,7 @@
 #! /usr/bin/env bash
 # consul-esm.sh
 
+cd /Users/jsr/Projects/MISE/Github/consul-esm
 cd ./consul-esm
 
 go mod tidy
@@ -14,7 +15,7 @@ go mod tidy
 # Manual build
 export CONSUL_ESM_VERSION="0.3.2"
 
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "-s -w -X github.com/hashicorp/consul-esm/version.Name="consul-esm" -X github.com/hashicorp/consul-esm/version.Version="$CONSUL_ESM_VERSION"" -o "dist/linux/amd64/consul-esm-linux-$CONSUL_ESM_VERSION"
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -buildvcs=false -ldflags "-s -w -X github.com/hashicorp/consul-esm/version.Name="consul-esm" -X github.com/hashicorp/consul-esm/version.Version="$CONSUL_ESM_VERSION"" -o "dist/linux/amd64/consul-esm-linux-$CONSUL_ESM_VERSION"
 
 ls -l dist/linux/amd64/consul-esm*
 
