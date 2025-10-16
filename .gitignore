@@ -2,6 +2,8 @@
 /bin
 /pkg
 /dist/*
+./dist
+./consul-esm.sh
 consul-esm.sh
 
 ### Golang ###
