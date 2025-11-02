@@ -98,13 +98,15 @@ func (a *Agent) updateCoords(nodeCh nodeChannel) {
 func (a *Agent) isHttpUrl(str string) (bool, error) {
 	url, err := url.ParseRequestURI(str)
 
+	a.logger.Info("url validation for: (%s)", str)
+
 	if err != nil {
 		a.logger.Error("url parse is failed", "url", str, "error", err)
 		return false, err
 	}
 
-	if url.Scheme != "http" || url.Scheme != "https" {
-		return false, fmt.Errorf("supported schemes are (%s)", url.Scheme)
+	if url.Scheme != "http" && url.Scheme != "https" {
+		return false, fmt.Errorf("supported schemes are (http, https), got: %s", url.Scheme)
 	}
 
 	if url.Host == "" {
@@ -129,7 +131,7 @@ func (a *Agent) runNodePing(node *api.Node) {
 
 	// Is enabled set strict HTTP pings or the node address in valid HTTP URL
 	if a.config.PingType == PingTypeHttp || (isHttpUrl && err != nil) {
-		a.logger.Info("node url is checked as HTTP ping", "node", node.Node, "address", node.Address, "pingType", a.config.PingType)
+		a.logger.Info("node url is checked as HTTP/HTTPS ping", "node", node.Node, "address", node.Address, "pingType", a.config.PingType)
 		rtt, err = pingNodeHttp(node.Address, a.config.PingType)
 	} else {
 		a.logger.Info("node url is checked as TCP/ICMP ping", "node", node.Node, "address", node.Address, "pingType", a.config.PingType)
