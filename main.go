@@ -6,15 +6,16 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/hashicorp/consul-esm/version"
-	"github.com/hashicorp/consul/logging"
-	"github.com/hashicorp/go-hclog"
-	"github.com/mitchellh/cli"
 	"io"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
+
+	"github.com/hashicorp/consul-esm/version"
+	"github.com/hashicorp/consul/logging"
+	"github.com/hashicorp/go-hclog"
+	"github.com/mitchellh/cli"
 )
 
 const (

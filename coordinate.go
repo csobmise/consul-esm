@@ -98,10 +98,10 @@ func (a *Agent) updateCoords(nodeCh nodeChannel) {
 func (a *Agent) isHttpUrl(str string) (bool, error) {
 	url, err := url.ParseRequestURI(str)
 
-	a.logger.Info("url validation for: (%s)", str)
+	a.logger.Info(fmt.Sprintf("Url validation for: (%s)", str))
 
 	if err != nil {
-		a.logger.Error("url parse is failed", "url", str, "error", err)
+		a.logger.Error("Url parse is failed", "url", str, "error", err)
 		return false, err
 	}
 
@@ -113,6 +113,7 @@ func (a *Agent) isHttpUrl(str string) (bool, error) {
 		return false, fmt.Errorf("host is empty in url %s", str)
 	}
 
+	a.logger.Info(fmt.Sprintf("Url (%s) is valid", str))
 	return true, nil
 }
 
@@ -130,11 +131,11 @@ func (a *Agent) runNodePing(node *api.Node) {
 	isHttpUrl, err := a.isHttpUrl(node.Address)
 
 	// Is enabled set strict HTTP pings or the node address in valid HTTP URL
-	if a.config.PingType == PingTypeHttp || (isHttpUrl && err != nil) {
-		a.logger.Info("node url is checked as HTTP/HTTPS ping", "node", node.Node, "address", node.Address, "pingType", a.config.PingType)
+	if a.config.PingType == PingTypeHttp || (isHttpUrl && err == nil) {
+		a.logger.Info("Node url is checked as HTTP/HTTPS ping", "node name", node.Node, "node address", node.Address, "config pingType", a.config.PingType)
 		rtt, err = pingNodeHttp(node.Address, a.config.PingType)
 	} else {
-		a.logger.Info("node url is checked as TCP/ICMP ping", "node", node.Node, "address", node.Address, "pingType", a.config.PingType)
+		a.logger.Info("Node url is checked as TCP/ICMP ping", "node name", node.Node, "node address", node.Address, "config pingType", a.config.PingType)
 		// Run node ping using ICMP or UDP based on the configured ping type.
 		// Note: Node address for ICMP/UDP pings should be an IP address or hostname
 		rtt, err = pingNode(node.Address, a.config.PingType)

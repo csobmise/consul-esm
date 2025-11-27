@@ -18,7 +18,6 @@ require (
 	github.com/hashicorp/serf v0.10.1
 	github.com/mitchellh/cli v1.1.5
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/onsi/gomega v1.37.0
 	github.com/prometheus/client_golang v1.19.1
 	github.com/stretchr/testify v1.9.0
 )
@@ -46,6 +45,7 @@ require (
 	github.com/envoyproxy/protoc-gen-validate v1.1.0 // indirect
 	github.com/fatih/color v1.17.0 // indirect
 	github.com/google/btree v1.1.2 // indirect
+	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/consul-net-rpc v0.0.0-20240430162428-577c8c7c7d01 // indirect
 	github.com/hashicorp/consul/envoyextensions v0.7.8 // indirect
