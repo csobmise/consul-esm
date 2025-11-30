@@ -95,25 +95,27 @@ func (a *Agent) updateCoords(nodeCh nodeChannel) {
 }
 
 // isHttpUrl checks if the given string is a valid URL and returns true if it is.
-func (a *Agent) isHttpUrl(str string) (bool, error) {
-	url, err := url.ParseRequestURI(str)
+func (a *Agent) isHttpUrl(address string) (bool, error) {
+	a.logger.Info(fmt.Sprintf("URL validation for: (%s)", address))
 
-	a.logger.Info(fmt.Sprintf("Url validation for: (%s)", str))
+	url, err := url.ParseRequestURI(address)
 
 	if err != nil {
-		a.logger.Error("Url parse is failed", "url", str, "error", err)
+		a.logger.Error("URL parse is failed", "url", address, "error", err)
 		return false, err
+	} else {
+		a.logger.Debug("Parsed URL:", "url", address, "url scheme", url.Scheme, "url host", url.Host, "url path", url.Path, "url raw query", url.RawQuery)
 	}
 
 	if url.Scheme != "http" && url.Scheme != "https" {
-		return false, fmt.Errorf("supported schemes are (http, https), got: %s", url.Scheme)
+		return false, fmt.Errorf("URL (%s) is not valid, supported schemes are (http, https) got: %s", address, url.Scheme)
 	}
 
 	if url.Host == "" {
-		return false, fmt.Errorf("host is empty in url %s", str)
+		return false, fmt.Errorf("URL (%s) host is empty", address)
 	}
 
-	a.logger.Info(fmt.Sprintf("Url (%s) is valid", str))
+	a.logger.Info(fmt.Sprintf("URL (%s) is valid", address))
 	return true, nil
 }
 
